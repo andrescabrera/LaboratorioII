@@ -1,0 +1,49 @@
+SELECT c.nombre, p.descripcion
+FROM cliente c, paquete p,viaje v
+WHERE c.cod_p = p.cod_p AND lugar = 'Paris'
+ORDER BY c.nombre, p.descripcion
+
+
+SELECT c.nombre, p.descripcion
+FROM itinerario i, viaje v, paquete p, cliente c
+WHERE i.cod_p = v.cod_p --joineo itinerario y viaje, por cod_p
+AND v.cod_p = p.cod_p --joineo viaje con paquete, por cod_p  (xra obtener desc)
+AND c.cod_c = v.cod_c --joineo cliente con viaje, por cod_c 
+AND i.lugar = 'Paris'               (para obtener el nombre)
+ORDER BY c.cod_c, p.cod_p
+
+
+--oskarina
+SELECT cod_p, descripcion
+FROM paquete
+WHERE  precio = max(precio)
+
+--andres
+SELECT cod_p, descripcion
+FROM paquete
+WHERE precio = (
+
+SELECT MAX( precio )
+FROM paquete
+)
+
+
+--corregido
+SELECT p.descripcion, c.nombre
+FROM paquete p, cliente c, viaje v
+WHERE p.cod_p = v.cod_p 
+AND v.cod_c = c.cod_c
+AND (c.nombre LIKE '%Perez' OR c.nombre LIKE '%Romero')
+
+--corregido
+SELECT c.nombre, p.descripcion, COUNT( * )
+FROM cliente c, paquete p, viaje v
+WHERE c.cod_c = v.cod_c
+AND v.cod_p = p.cod_p
+HAVING COUNT( * ) >2
+
+
+--corregido
+SELECT cod_p, descripcion, precio
+FROM paquete
+WHERE cod_p NOT IN (SELECT cod_p FROM viaje);

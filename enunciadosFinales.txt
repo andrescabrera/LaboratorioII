@@ -1,0 +1,12 @@
+Crear un paquete que contenga:
+
+-Procedimiento AltaEmp para dar de alta un empleado, al cual se le pasaran los siguientes parametros:
+Id, Nombre, Email, JobId, Comisión, Id del Jefe, Departamento y de forma optativa: Apellido, numero de telefono, fecha de incorporación, salario.
+Solo se aceptaran altas para empleados reclutados este mes.
+-Procedimiento DatosEmp: recibe un id de empleado por parametro.
+Mostrar los datos del empleado, de su jefe, y las veces que estuvo en la empresa (Tabla JobHistory con start_date y end_date).
+
+-Función CantEmp, que devuelva la cantidad de empleados en una región, que tenga un parametro id de región.
+
+-Crear un trigger para cancelar una actualización o inserción de un empleado si su nuevo sueldo no esta entre el minimo y el maximo de su nuevo Job.
+------------------------------------------------------------

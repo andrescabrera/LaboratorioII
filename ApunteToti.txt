@@ -1,0 +1,146 @@
+                                                                     
+                                                                     
+                                                                     
+                                             
+create procedure
+create function
+
+procedimientos.
+
+crear procedimientos que liste todos los apellidos de los empleados, ordenados alfabeticamente.
+---------------------------------------------------------------
+ejemplo sencillo:
+
+create or replace procedure lista_emp 
+is 
+cursor c_e is select last_name
+              from employee
+              order by last_name;
+begin for r_e in c_e loop
+      dbms_output.put_line('Apellido: ' || r_e.last_name);
+end loop;
+end;
+---------------------------------------------------------------
+
+como definir un parametro
+
+(nombre tipo de parametro tipo de dato (default))
+	     in		  cualquier tipo de dato usado en pl es valido
+	     out	      
+	     in out
+
+-----------------------------------------------------------------
+
+ejemplo con parametros
+
+create or replace procedure item_orden (n_o in number)
+is 
+cursor c_orden is select item_id, product_id, actual_price, quantity, total 
+                  from item
+                  where order_id = n_o;
+begin 
+      for r_o in c_orden loop
+            dbms_output.put_line(r_o.item_id || ', ' || r_o.product_id || ', ' || r_o.actual_price || ', ' || r_o.quantity || ', ' || r_o.total);
+      end loop;
+end;
+-------------------------------------------------------------------------------------
+otro ejemplo con parametros
+
+create or replace procedure busco_emp (p1 in number, p2 out employee.last_name%type)
+is 
+begin 
+      select last_name into p2
+      from employee
+      where employee_id = p1;
+exception 
+      when no.data.found then
+            dbms_output.put_line('p2 No existe');
+end;
+
+para ejecutarlo hacer en sqldeveloper
+
+declare
+	a varchar(100);
+begin
+	busco_emp (7369, a);
+	dbms_output.put_line(a);
+end;
+--------------------------------------------------------------------------------------
+formatear numero
+
+create or replace procedure f_t (p1 in out VARCHAR2)
+is
+begin 
+      p1 := '(' || substr(p1, 1, 4) ||')' || ' ' ||
+                   substr(p1, 5, 2) || ' ' ||
+                   substr(p1, 7, 4) || '-' ||
+                   substr(p1, 11, 4);
+end;
+
+y lo ejecuto
+
+variable v1 varchar2(100)
+begin 
+      v1 := '00541144448888';
+      F_T (:v1);
+end;
+print v1
+---------------------------------------------------------------------------------------
+
+funciones
+
+create or replace function f_promedio (p1 number)
+return number
+is v_promedio employee.salary% TYPE;
+begin 
+      select avg(salary)
+      into v_promedio
+      from employee
+      where department_id = p1;
+      return v_promedio;
+end;
+
+ejecuto asi
+
+variable u number
+execute :u := f_promedio(20)
+print u
+------------------------------------------------------------------------------------------
+calcular iva
+
+create or replace
+function iva (p1 sales_order.order_id% TYPE)
+return number
+is 
+begin 
+      return round(p1 * 1.21);
+end;
+
+usandola en el select.
+select order_id, order_date, customer_id, ship_date, iva(total)
+from sales_order;
+-----------------------------------------------------------------
+retorno dato booleano
+
+create or replace function iva (p1 sales_order.order_id% TYPE)
+return boolean
+is 
+begin 
+       SELECT x
+       into x
+       from department
+       where department_id = p1;
+       return true;
+end;
+----------------------------------------------------------------
+ejemplo de ejecucion con parametros
+
+create or replace procedure prueba (p1 number default 10, p2 varchar2 default 'a', p3 date default sysdate)
+is
+begin 
+      dbms_output.put_line(p1||p2||p3);
+end;
+
+execute prueba //como tiene parametros por default no hay problemas
+ // si por ejemplo sysdate no se pasa por default y se quiere pasar sysdate + 1 hay que hacer execute (p3 => sysdate + 1)
+

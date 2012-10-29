@@ -1,0 +1,90 @@
+-- Andrés Cabrera - 1er Parcial - Laboratorio 2 - 3/5/2011
+--Ejercicio 1
+SELECT e.first_name || ', ' || e.last_name AS empleado, j.first_name || ', ' || j.last_name AS jefe
+FROM employee e LEFT JOIN employee j ON (e.manager_id = j.employee_id)
+ORDER BY j.first_name, j.last_name;
+
+--Ejercicio 2
+SELECT department_id, name,  COUNT(employee_id) AS cantidadEmpleados, ROUND(AVG(salary)) AS promedioDeSalarios, regional_group
+FROM department JOIN employee USING (department_id) JOIN location USING (location_id)
+GROUP BY department_id, name, regional_group;
+
+--Ejercicio 3
+DECLARE
+EXsinClientes EXCEPTION;
+idEmpleado employee.employee_id%TYPE := &empleado;
+TYPE recEmp IS RECORD (nom employee.first_name%TYPE, ape employee.last_name%TYPE, salario employee.salary%TYPE, comision employee.commission%TYPE); 
+miEmpleado recEmp;
+cantidadClientes number;
+BEGIN  
+  SELECT first_name, last_name, salary, commission
+  INTO miEmpleado
+  FROM employee
+  WHERE employee_id = idEmpleado;
+  dbms_output.put_line('Nombre: ' || miEmpleado.nom || ' ' || miEmpleado.ape || ' Salario: ' || miEmpleado.salario || ' Comision: ' ||  miEmpleado.comision);
+  
+  SELECT COUNT(*) AS cantCli
+  INTO cantidadClientes
+  FROM customer
+  WHERE salesperson_id = idEmpleado;
+  
+  IF cantidadClientes = 0
+    THEN RAISE EXsinClientes;
+    ELSE dbms_output.put_line('Cantidad de Clientes: ' || cantidadClientes);
+  END IF;
+  
+  EXCEPTION 
+    WHEN no_data_found 
+    THEN dbms_output.put_line('Cliente no encontrado');
+    WHEN EXsinClientes
+    THEN dbms_output.put_line('El empleado no es vendedor');
+END;
+
+--Ejercicio 4 
+-- Indexo la tabla por id de Empleado, ya que sabiendo su Id, me permitira un rapido acceso a la posicion.
+DECLARE
+jobIdIng job.job_id%TYPE := &jobid;
+CURSOR empleados IS
+  SELECT employee_id, first_name, last_name, name, salary
+  FROM employee JOIN department USING (department_id) JOIN job USING (job_id)
+  WHERE job_id = jobIdIng;
+TYPE tablaEmpleados IS TABLE OF empleados%ROWTYPE INDEX BY BINARY_INTEGER; 
+empJob tablaEmpleados;
+J number;
+BEGIN
+FOR unEmp IN empleados LOOP
+  empJob(unEmp.employee_id).employee_id := unEmp.employee_id;
+  empJob(unEmp.employee_id).first_name := unEmp.first_name;
+  empJob(unEmp.employee_id).last_name := unEmp.last_name;
+  empJob(unEmp.employee_id).name := unEmp.name;
+  empJob(unEmp.employee_id).salary := unEmp.salary;  
+END LOOP;
+J := empJob.first;
+IF empJob.count = 0 THEN
+  dbms_output.put_line('La tabla está vacía.');
+END IF;
+FOR i IN 1..empJob.count LOOP
+  dbms_output.put_line(empJob(j).employee_id || ' ' || empJob(j).first_name || ' ' || empJob(j).last_name || ' ' || empJob(j).name || ' ' || empJob(j).salary);
+J := empJob.next(J);
+END LOOP;
+END;
+
+--Ejercicio 5
+DECLARE
+CURSOR grados IS
+  SELECT grade_id, lower_bound, upper_bound
+  FROM salary_grade
+  ORDER BY grade_id;
+CURSOR empleadosGrado (idGrado salary_grade.grade_id%TYPE) IS
+  SELECT first_name || ', ' || last_name AS nombre, function, salary
+  FROM employee JOIN job USING (job_id), salary_grade
+  WHERE grade_id = idGrado AND salary BETWEEN lower_bound AND upper_bound
+  ORDER BY nombre; 
+BEGIN
+FOR unGrado IN grados LOOP
+  dbms_output.put_line('Grado: ' || unGrado.grade_id || ' LowerBound: ' || unGrado.lower_bound || ' UpperBound: ' || unGrado.upper_bound);
+  FOR unEmpleado IN empleadosGrado (unGrado.grade_id) LOOP
+    dbms_output.put_line('Name: ' || unEmpleado.nombre || ' Function: ' || unEmpleado.function || ' Salary: ' || unEmpleado.salary);
+  END LOOP;
+END LOOP;
+END;
